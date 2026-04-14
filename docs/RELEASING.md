@@ -38,9 +38,12 @@ You need:
   both work; GitHub's web UI and `gh` CLI are fine.
 - **PyPI trusted publishing** already configured for this project.
   Check at https://pypi.org/manage/project/nvhive/settings/publishing/
-  — the workflow file is `publish.yml`, environment name `pypi`,
-  repository `hitechcloud-vietnam/nvhive`. If trusted publishing breaks, the
-  fallback is an API token in a secret called `PYPI_API_TOKEN`.
+   — for the existing `nvhive` project, add a GitHub publisher with:
+   project `nvhive`, owner `hitechcloud-vietnam`, repository `nvHive`,
+   workflow file `publish.yml`, environment `pypi`. Do **not** use a
+   pending publisher for an already-existing project. If trusted publishing
+   breaks, the fallback is an API token in a secret called
+   `PYPI_API_TOKEN`.
 - **A clean working tree** on `main`. `git status` should show nothing.
 
 ## Pre-release checks
@@ -84,6 +87,52 @@ section as the release notes. Clicking "Publish release" triggers
 Watch the workflow run in the Actions tab. Typical duration is 2–3
 minutes. On success, `pip install nvhive==0.7.0` becomes live on PyPI
 within seconds.
+
+## Trusted publishing checklist
+
+If PyPI shows `invalid-publisher`, the GitHub OIDC claims do not match the
+publisher registered on PyPI. For this repository, the values must be:
+
+- **PyPI project name**: `nvhive`
+- **Owner**: `hitechcloud-vietnam`
+- **Repository name**: `nvHive`
+- **Workflow name**: `publish.yml`
+- **Environment name**: `pypi`
+
+If the project already exists on PyPI, add the publisher under:
+
+`https://pypi.org/manage/project/nvhive/settings/publishing/`
+
+Only use the account-level “pending publisher” flow when the PyPI project does
+not exist yet.
+
+For TestPyPI, configure the same workflow file with environment `testpypi` in
+the TestPyPI project settings.
+
+## Fallback: API token publishing
+
+If trusted publishing is temporarily misconfigured, this repository's publish
+workflow automatically falls back to an API token when these environment
+secrets exist:
+
+- `PYPI_API_TOKEN` for the `pypi` environment
+- `TEST_PYPI_API_TOKEN` for the `testpypi` environment
+
+Create a token in PyPI under:
+
+`PyPI → Account settings → API tokens → Add API token`
+
+Use a project-scoped token for `nvhive`, then save it in GitHub under:
+
+`Settings → Environments → pypi → Secrets and variables → Actions`
+
+Set:
+
+- **Name**: `PYPI_API_TOKEN`
+- **Value**: token starting with `pypi-`
+
+For TestPyPI, create the token in TestPyPI and save it as
+`TEST_PYPI_API_TOKEN` in the `testpypi` environment.
 
 ## Verifying the release
 
